@@ -19,9 +19,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 import pers.neige.neigeitems.utils.ItemUtils;
 
 import java.awt.*;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +48,23 @@ public class BasicUtil {
         }
         return players;
     }
-    private static final Pattern RANGE_PATTERN = Pattern.compile("(\\d+)(?:\\s*~\\s*(\\d+))?");
+    public static boolean checkClass(String className, String methodName) {
+        try {
+            Class<?> targetClass = Class.forName(className);
+            Method[] methods = targetClass.getDeclaredMethods();
+
+            for (Method method : methods) {
+                if (method.getName().equals(methodName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+    private static final Pattern RANGE_PATTERN = Pattern.compile("(-?\\d+)(?:\\s*~\\s*(-?\\d+))?");
 
     public static Point parseRange(String input) {
         if (Objects.isNull(input)) {
@@ -95,24 +113,6 @@ public class BasicUtil {
         }
         Block newBlock = getRandomBlock(chunk, range);
         return newBlock.getWorld().getBlockAt(newBlock.getX(), yValue, newBlock.getZ());
-    }
-
-    public static Block getGaussianRandomBlock(Location location, double structureStdDev) {
-        int xValue = (int) Math.round(location.getBlockX() + CustomArcheology.RANDOM.nextGaussian() * structureStdDev),
-            zValue = (int) Math.round(location.getBlockZ() + CustomArcheology.RANDOM.nextGaussian() * structureStdDev);
-        Block newBlock = getRandomBlock(location.getChunk(),  new Point(location.getBlockY() - 5, location.getBlockY() + 5));
-        return newBlock.getWorld().getBlockAt(xValue, newBlock.getY(), zValue);
-    }
-
-    public static YamlConfiguration stringToYaml(String yamlString) {
-        YamlConfiguration yamlConfig = new YamlConfiguration();
-        try {
-            yamlConfig.loadFromString(yamlString);
-        } catch (InvalidConfigurationException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return yamlConfig;
     }
 
     public static String getItemName(ItemStack displayItem) {

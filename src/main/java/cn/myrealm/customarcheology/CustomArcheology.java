@@ -11,6 +11,7 @@ import cn.myrealm.customarcheology.managers.managers.*;
 import cn.myrealm.customarcheology.managers.managers.system.DatabaseManager;
 import cn.myrealm.customarcheology.managers.managers.system.LanguageManager;
 import cn.myrealm.customarcheology.managers.managers.system.TextureManager;
+import cn.myrealm.customarcheology.utils.BasicUtil;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import org.bukkit.Bukkit;
@@ -32,18 +33,19 @@ public final class CustomArcheology extends JavaPlugin {
     private final List<BaseManager> managers = new ArrayList<>();
     public static ProtocolManager protocolManager;
     public static final Random RANDOM = new Random();
+    public static boolean canUseStructure = false;
 
     @Override
     public void onEnable() {
         plugin = this;
         protocolManager = ProtocolLibrary.getProtocolManager();
+
         outputDefaultFiles();
 
         initPlugin();
         registerDefaultListeners();
         registerDefaultCommands();
 
-        Bukkit.getConsoleSender().sendMessage("§x§9§8§F§B§9§8[CustomArcheology] §fYour server version: " + Bukkit.getVersion());
         Bukkit.getConsoleSender().sendMessage(Messages.ENABLE_MESSAGE.getMessageWithPrefix());
     }
 
@@ -66,6 +68,11 @@ public final class CustomArcheology extends JavaPlugin {
         managers.add(new BlockManager(this));
         managers.add(new ChunkManager(this));
         managers.add(new ToolManager(this));
+        canUseStructure = BasicUtil.checkClass("org.bukkit.Chunk", "getStructures");
+        if (!canUseStructure) {
+            Bukkit.getConsoleSender().sendMessage("§x§9§8§F§B§9§8[CustomArcheology] §cCan not register structure type generate method" +
+                    " in this server. Try to update your server core jar to latest 1.20.4+ version to fix.");
+        }
     }
     public void disablePlugin() {
         for (BaseManager manager : managers) {
@@ -91,6 +98,7 @@ public final class CustomArcheology extends JavaPlugin {
         command.registerSubCommand(new TestCommand());
         command.registerSubCommand(new ArchifyCommand());
         command.registerSubCommand(new DeArchifyCommand());
+        command.registerSubCommand(new PlaceCommand());
         //noinspection ConstantConditions
         getCommand("customarcheology").setExecutor(command);
         //noinspection ConstantConditions
